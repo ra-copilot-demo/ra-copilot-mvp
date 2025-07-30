@@ -1,13 +1,5 @@
-# backend/main.py
-
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-
-app = FastAPI(title="RA Copilot Backend")
-
-@app.get("/ping")
-async def ping():
-    return {"ping": "pong"}
 
 class AnalyzeRequest(BaseModel):
     transcript: str
@@ -15,9 +7,12 @@ class AnalyzeRequest(BaseModel):
 class AnalyzeResponse(BaseModel):
     result: str
 
+app = FastAPI(title="RA Copilot Backend")
+
 @app.post("/analyze", response_model=AnalyzeResponse)
-async def analyze(request: AnalyzeRequest):
+def analyze(request: AnalyzeRequest):
     text = request.transcript.strip()
     if not text:
-        raise HTTPException(400, "Empty transcript")
-    return AnalyzeResponse(result=f"Received {len(text)} chars")
+        raise HTTPException(status_code=400, detail="Empty transcript")
+    # Stub logic: echo back
+    return AnalyzeResponse(result=f"Received {len(text)} characters for analysis")
