@@ -6,48 +6,47 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import openai
 
-# Load environment variables from .env in project root
+# 1. Load environment variables from .env in project root
 load_dotenv()
 
-# Retrieve the OpenAI API key
+# 2. Retrieve and validate the OpenAI API key
 OPENAI_KEY = os.getenv("OPENAI_API_KEY")
 if not OPENAI_KEY:
-    raise RuntimeError("OPENAI_API_KEY is not set. Please add it to your .env file.")
-
+    raise RuntimeError("OPENAI_API_KEY is not set. Please add it to your .env file or your environment.")
 openai.api_key = OPENAI_KEY
 
-# Instantiate the FastAPI app
+# 3. Instantiate the FastAPI app
 app = FastAPI(title="RA Copilot Backend")
 
-# Health‑check endpoint
+# 4. Health‑check endpoint
 @app.get("/ping")
 async def ping():
     return {"ping": "pong"}
 
-# Request and response models
+# 5. Define request/response models
 class AnalyzeRequest(BaseModel):
     transcript: str
 
 class AnalyzeResponse(BaseModel):
     result: str
 
-# Analysis endpoint
+# 6. Main analysis endpoint
 @app.post("/analyze", response_model=AnalyzeResponse)
 async def analyze(request: AnalyzeRequest):
     text = request.transcript.strip()
     if not text:
         raise HTTPException(status_code=400, detail="Empty transcript")
 
-    # Call GPT‑4 Turbo
+    # 7. Call GPT‑4 Turbo
     try:
         response = openai.ChatCompletion.create(
-            model="gpt-4o",  # or "gpt-4-turbo"
+            model="gpt-4o-mini",  # or "gpt-4-turbo" depending on your subscription
             messages=[
                 {
                     "role": "system",
                     "content": (
                         "You are a regulatory affairs expert. "
-                        "Identify any design change, labeling risk, or documentation issues "
+                        "Identify any design change triggers, labeling risks, or documentation issues "
                         "based on ISO 13485, MDR, and FDA 510(k), and suggest concise next steps."
                     )
                 },
@@ -58,6 +57,8 @@ async def analyze(request: AnalyzeRequest):
         )
         answer = response.choices[0].message.content.strip()
     except Exception as e:
+        # Log the exception for debugging
+        print("❗ Exception in /analyze:", e)
         raise HTTPException(status_code=500, detail=f"OpenAI API error: {e}")
 
     return AnalyzeResponse(result=answer)
