@@ -30,4 +30,3 @@ if st.button("Analyze"):
 
 st.markdown("---")
 st.markdown("ℹ️ This MVP demo will later show guidance cards based on regulatory frameworks like MDR, ISO 13485, and FDA 21 CFR 820.")
-)
