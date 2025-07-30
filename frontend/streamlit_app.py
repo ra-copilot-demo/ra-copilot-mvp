@@ -15,7 +15,16 @@ if st.button("Analyze"):
     if not transcript.strip():
         st.error("Please paste some transcript or notes first.")
     else:
-        # Placeholder for analysis results
         st.info("Analyzing your transcript…")
-        # TODO: Call backend /analyze endpoint
-        st.success("✅ Placeholder: Analysis complete!")
+        try:
+            import requests
+            response = requests.post(
+                "http://127.0.0.1:8000/analyze",
+                json={"transcript": transcript},
+                timeout=10
+            )
+            response.raise_for_status()
+            result = response.json().get("result", "No result returned")
+            st.success(result)
+        except Exception as e:
+            st.error(f"Analysis failed: {e}")
